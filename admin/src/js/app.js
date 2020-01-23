@@ -31,7 +31,7 @@ let app = new Vue({
     getFleurs(){
       $.ajax({
         type: 'GET',
-        url: 'http://192.168.1.3:19080/fleurs',
+        url: 'http://localhost:19080/fleurs',
         dataType: 'json',
         context: this,
         success: function(data){
@@ -48,7 +48,7 @@ let app = new Vue({
     createFleur(){
       $.ajax({
         type: 'POST',
-        url: 'http://192.168.1.3:19080/fleurs',
+        url: 'http://localhost:19080/fleurs',
         context: this,
         data: this.edition,
         success: function(data){
@@ -105,7 +105,7 @@ let app = new Vue({
       let dataToSend = this.edition;
       $.ajax({
         type: 'PATCH',
-        url: 'http://192.168.1.3:19080/fleurs/' + this.editTargetId,
+        url: 'http://localhost:19080/fleurs/' + this.editTargetId,
         data: dataToSend,
         context: this,
         success: function(data){
@@ -126,7 +126,7 @@ let app = new Vue({
         this.generatedQR = fleurID;
         document.getElementById('qrcode-container').innerHTML = "";
         let qrcode = new QRCode(document.getElementById('qrcode-container'));
-        fleurID = 'http://192.168.1.3:19080/fleurs/' + fleurID,
+        fleurID = 'http://localhost:19080/fleurs/' + fleurID,
         qrcode.makeCode(fleurID.toString());
     },
 
@@ -137,7 +137,7 @@ let app = new Vue({
     deleteFleur(fleurID){
       $.ajax({
         type: 'DELETE',
-        url: 'http://192.168.1.3:19080/fleurs/' + fleurID,
+        url: 'http://localhost:19080/fleurs/' + fleurID,
         context: this,
         success: function(data){
           this.leaveEdit();
