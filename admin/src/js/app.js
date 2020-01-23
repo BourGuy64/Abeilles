@@ -159,6 +159,7 @@ let app = new Vue({
       evt = evt || window.event;
       if (evt.keyCode == 27) {
         this.leaveEdit();
+        this.leaveQR();
       }
     };
   },
