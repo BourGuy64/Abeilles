@@ -1,0 +1,67 @@
+version: "3"
+
+networks:
+  lbs.net:
+    driver: bridge
+
+services:
+  #############################
+  # API pour gérer les fleurs
+  #############################
+  api.fleur:
+    image: node
+    environment:
+      - NODE_ENV=dev
+      - VHOST_HOSTNAME=api.fleur.locale
+    ports:
+      - "19080:8080"
+    volumes:
+      - ./fleur_dev:/app/fleur_api
+    working_dir: /app/fleur_api
+    command: npm run dev
+    networks:
+      - lbs.net
+    links:
+      - mysql.fleur:dbcom
+
+
+  #############################
+  # Serveur administration
+  #############################
+  admin.management:
+    build:                   ./build/
+    volumes:
+      - ./admin:/var/www/html
+    ports:
+      - "80:80"
+
+
+  #############################
+  # MySQL contenant les fleurs
+  #############################
+  mysql.fleur:
+    image: mariadb:latest
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8 --collation-server=utf8_general_ci
+    environment:
+      - MYSQL_ROOT_PASSWORD=catroot123
+      - MYSQL_USER=fleur
+      - MYSQL_PASSWORD=fleur
+      - MYSQL_DATABASE=fleur
+    ports:
+      - "3308:3306"
+    networks:
+      - lbs.net
+    volumes:
+      - ./fleur_api/sql/data.sql:/docker-entrypoint-initdb.d/data.sql
+
+  #############################
+  # Adminer
+  #############################
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    networks:
+      - lbs.net
+    links:
+      - mysql.fleur:command
