@@ -41,11 +41,6 @@
           </div>
 
           <div class="form">
-            <label>Couleur</label>
-            <input type="text" v-model="edition.color">
-          </div>
-
-          <div class="form">
             <label>Nectar</label>
             <input type="number" v-model="edition.nectar">
           </div>
@@ -56,13 +51,44 @@
           </div>
 
           <div class="form">
-            <label>Date du début de floraison</label>
-            <input type="date" v-model="edition.bloom_start">
+            <label>Couleur</label>
+            <input type="text" v-model="edition.color">
+          </div>
+
+          <div class="form">
+            <label>Date de début de floraison</label>
+            <select v-model="edition.bloom_start">
+              <option value="1">Janvier</option>
+              <option value="2">Février</option>
+              <option value="3">Mars</option>
+              <option value="4">Avril</option>
+              <option value="5">Mai</option>
+              <option value="6">Juin</option>
+              <option value="7">Juillet</option>
+              <option value="8">Août</option>
+              <option value="9">Septembre</option>
+              <option value="10">Octobre</option>
+              <option value="11">Novembre</option>
+              <option value="12">Décembre</option>
+            </select>
           </div>
 
           <div class="form">
             <label>Date de fin de floraison</label>
-            <input type="date" v-model="edition.bloom_end">
+            <select v-model="edition.bloom_end">
+              <option value="1">Janvier</option>
+              <option value="2">Février</option>
+              <option value="3">Mars</option>
+              <option value="4">Avril</option>
+              <option value="5">Mai</option>
+              <option value="6">Juin</option>
+              <option value="7">Juillet</option>
+              <option value="8">Août</option>
+              <option value="9">Septembre</option>
+              <option value="10">Octobre</option>
+              <option value="11">Novembre</option>
+              <option value="12">Décembre</option>
+            </select>
           </div>
 
           <div class="form">
@@ -72,11 +98,11 @@
 
           <div class="form">
             <label>Photo</label>
-            <input type="text" v-model="edition.photo">
+            <input type="file" id="img" accept="image/png, image/jpeg">
           </div>
 
           <div class="action-button">
-            <button class="valid" v-if="create" @click="createFleur" type="button" name="button">Crée</button>
+            <button class="valid" v-if="create" @click="createFleur" type="button" name="button">Créer</button>
             <button class="valid" v-if="!create" @click="sendEdit" type="button" name="button">Editer</button>
             <button class="cancel" @click="leaveEdit" type="button" name="button">Annuler</button>
           </div>
@@ -84,6 +110,7 @@
 
         <table v-if="fleurs.length > 0">
           <thead>
+            <th></th>
             <th></th>
             <th></th>
             <th>ID</th>
@@ -103,6 +130,7 @@
             <tr v-for="fleur in fleurs">
               <td @click="editFleur(fleur)"><i class="material-icons pointer">edit</i></td>
               <td @click="createQR(fleur.id)"><img width="20px" src="src/svg/QR_icon.svg" alt="QR_icon"></td>
+              <td><img width="2em" :src="'uploads/' + fleur.photo" alt=""></td>
               <td>{{fleur.id}}</td>
               <td>{{fleur.n_latin}}</td>
               <td>{{fleur.n_fr}}</td>
@@ -110,8 +138,8 @@
               <td>{{fleur.color}}</td>
               <td>{{fleur.nectar}}</td>
               <td>{{fleur.pollen}}</td>
-              <td>{{fleur.bloom_start | toLocaleDate}}</td>
-              <td>{{fleur.bloom_end | toLocaleDate}}</td>
+              <td>{{fleur.bloom_start | toMonth}}</td>
+              <td>{{fleur.bloom_end | toMonth}}</td>
               <td>{{fleur.localisation}}</td>
               <td>{{fleur.photo}}</td>
               <td @click="deleteFleur(fleur.id)"><i class="material-icons pointer">delete</i></td>

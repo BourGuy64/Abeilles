@@ -1,8 +1,11 @@
-Vue.filter('toLocaleDate', function(date){
-  if(date instanceof Date == false)
-    date = new Date(date);
-  return date.toLocaleDateString('fr-FR', {month: "long", day: "numeric"});
+const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+Vue.filter('toMonth', function(date){
+  return monthNames[date - 1]
 });
+
+const Api = 'localhost'; //Use when dev on local Docker's
+// const Api = '51.158.67.211'; //Use for Prod
 
 let app = new Vue({
   el: '#app',
@@ -31,7 +34,7 @@ let app = new Vue({
     getFleurs(){
       $.ajax({
         type: 'GET',
-        url: 'http://localhost:19080/fleurs',
+        url: 'http://'+ Api +':19080/fleurs',
         dataType: 'json',
         context: this,
         success: function(data){
@@ -48,7 +51,7 @@ let app = new Vue({
     createFleur(){
       $.ajax({
         type: 'POST',
-        url: 'http://localhost:19080/fleurs',
+        url: 'http://'+ Api +':19080/fleurs',
         context: this,
         data: this.edition,
         success: function(data){
@@ -94,8 +97,6 @@ let app = new Vue({
 
     editFleur(fleur){
       this.edition = Object.assign({}, fleur);
-      this.edition.bloom_start = new Date(this.edition.bloom_start).toISOString().split('T')[0];
-      this.edition.bloom_end = new Date(this.edition.bloom_end).toISOString().split('T')[0];
       this.editTargetId = fleur.id;
       this.goEdit();
       this.create = false;
@@ -103,19 +104,39 @@ let app = new Vue({
 
     sendEdit(){
       let dataToSend = this.edition;
+      let file_data = $('#img').prop('files')[0];
+      let form_data = new FormData();
+      form_data.append('file', file_data);
       $.ajax({
-        type: 'PATCH',
-        url: 'http://localhost:19080/fleurs/' + this.editTargetId,
-        data: dataToSend,
+        type: 'POST',
+        url: '../upload.php',
+        data: form_data,
+        dataType: 'text',
+        cache: false,
+        contentType: false,
+        processData: false,
         context: this,
         success: function(data){
-          this.leaveEdit();
-          this.getFleurs();
+          if($('#img').prop('files').length > 0)
+            dataToSend.photo = $('#img').prop('files')[0].name;
+          $.ajax({
+            type: 'PATCH',
+            url: 'http://'+ Api +':19080/fleurs/' + this.editTargetId,
+            data: dataToSend,
+            context: this,
+            success: function(data){
+              this.leaveEdit();
+              this.getFleurs();
+            },
+            error: function(data){
+              console.log(data);
+            },
+            completed: function(data){
+              console.log(data);
+            }
+          });
         },
         error: function(data){
-          console.log(data);
-        },
-        completed: function(data){
           console.log(data);
         }
       });
@@ -126,7 +147,6 @@ let app = new Vue({
         this.generatedQR = fleurID;
         document.getElementById('qrcode-container').innerHTML = "";
         let qrcode = new QRCode(document.getElementById('qrcode-container'));
-        fleurID = 'http://localhost:19080/fleurs/' + fleurID,
         qrcode.makeCode(fleurID.toString());
     },
 
@@ -137,7 +157,7 @@ let app = new Vue({
     deleteFleur(fleurID){
       $.ajax({
         type: 'DELETE',
-        url: 'http://localhost:19080/fleurs/' + fleurID,
+        url: 'http://'+ Api +':19080/fleurs/' + fleurID,
         context: this,
         success: function(data){
           this.leaveEdit();

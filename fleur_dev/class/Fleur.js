@@ -34,8 +34,8 @@ export class Fleur{
       color :req.body.color,
       nectar :req.body.nectar,
       pollen :req.body.pollen,
-      bloom_start : new Date(req.body.bloom_start),
-      bloom_end : new Date(req.body.bloom_end),
+      bloom_start : req.body.bloom_start,
+      bloom_end : req.body.bloom_end,
       localisation :req.body.localisation,
       photo :req.body.photo,
       created_at: new Date()
@@ -52,10 +52,7 @@ export class Fleur{
       let toEdit = result[0];
       for(let key in toEdit){
         if(typeof req.body[key] !== "undefined"){
-          if(key == "bloom_start" || key == "bloom_end"){
-            toEdit[key] = new Date(req.body[key]);
-          }
-          else if (key == 'created_at' || key == 'updated_at'){}
+          if (key == 'created_at' || key == 'updated_at'){}
           else{
             toEdit[key] = req.body[key];
           }
