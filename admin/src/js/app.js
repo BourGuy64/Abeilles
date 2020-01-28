@@ -1,7 +1,24 @@
+//Liste des mois de l'année afin de les afficher
 const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
 Vue.filter('toMonth', function(date){
   return monthNames[date - 1]
+});
+
+Vue.filter('meterSize', function(taille){
+  taille = taille.toString();
+  if(taille.length > 2){
+    let cm = taille.slice(2)
+    let m = taille.slice(0, 2);
+    if (cm == '00')
+      return m + ' m ';
+    else
+      return m + ' m ' + cm + ' cm'
+  }
+  else{
+    return taille + ' cm';
+  }
+
 });
 
 const Api = 'localhost'; //Use when dev on local Docker's
@@ -10,6 +27,7 @@ const Api = 'localhost'; //Use when dev on local Docker's
 let app = new Vue({
   el: '#app',
   data: {
+    monthNames: monthNames,
     fleurs: [],
     showEdit: false,
     create: true,
@@ -31,23 +49,23 @@ let app = new Vue({
     editTargetId: 0
   },
   methods:{
+   /**
+    * Recupère les fleurs depuis l'API et les ajoutent à la VUE
+    */
     getFleurs(){
       $.ajax({
         type: 'GET',
         url: 'http://'+ Api +':19080/fleurs',
         dataType: 'json',
         context: this,
-        success: function(data){
-          this.fleurs = data;
-        },
-        error: function(data){
-        },
-        completed: function(data){
-          console.log(data);
-        }
+        success: function(data){this.fleurs = data;},
+        error: function(data){console.log(data);}
       });
     },
 
+  /**
+   * Envoi les données et l'instruction de création d'une nouvelle fleur
+   */
     createFleur(){
       $.ajax({
         type: 'POST',
@@ -55,20 +73,18 @@ let app = new Vue({
         context: this,
         data: this.edition,
         success: function(data){
-          this.initEditionFields();
-          this.leaveEdit();
-          this.getFleurs();
-          console.log(data);
-        },
-        error: function(data){
-          console.log(data);
-        },
-        completed: function(data){
-          console.log(data);
-        }
+                  this.initEditionFields();
+                  this.leaveEdit();
+                  this.getFleurs();
+                },
+        error: function(data){console.log(data);}
       });
     },
 
+    /**
+     * Remet le formulaire à zéro, notamment dans le cas où on veut passer en mode création,
+     * effacer les valeurs déjà renseignées
+     */
     initEditionFields(){
       this.edition = {
         n_latin :'',
@@ -85,16 +101,27 @@ let app = new Vue({
       }
     },
 
+    /**
+     * Quitte la fenêtre contenant le formulaire de création/édition
+     */
     leaveEdit(){
       this.showEdit = false;
       this.create = true;
       this.initEditionFields();
     },
 
+    /**
+     * Affiche la fenêtre contenant le formulaire de création/édition
+     */
     goEdit(){
       this.showEdit = true;
     },
 
+    /**
+     * Récupère les informations de la fleur à modifier
+     * ouvre la fenêtre contenant le formulaire et prérempli les champs
+     * @params fleur, objet contenant les informations de la fleur
+     */
     editFleur(fleur){
       this.edition = Object.assign({}, fleur);
       this.editTargetId = fleur.id;
@@ -102,14 +129,19 @@ let app = new Vue({
       this.create = false;
     },
 
+    /**
+     * Envoi a l'API l'instruction de modifier la fleur
+     */
     sendEdit(){
-      let dataToSend = this.edition;
+      //Récpuère l'image transmise dans le formulaire
       let file_data = $('#img').prop('files')[0];
       let form_data = new FormData();
-      form_data.append('file', file_data);
+      form_data.append('file_uploaded', file_data);
+
+      //Transmet l'image à un script PHP pour généré l'image sur le serveur
       $.ajax({
         type: 'POST',
-        url: '../upload.php',
+        url: 'http://'+Api+':19080/uploadfile',
         data: form_data,
         dataType: 'text',
         cache: false,
@@ -145,6 +177,10 @@ let app = new Vue({
       });
     },
 
+    /**
+     * Génère le code QR de l'ID de la fleur et affiche la fenêtre contenant le code QR
+     * @params fleurID, id de la fleur dont on va généré le code QR
+     */
     createQR(fleurID){
         this.viewQR = true;
         this.generatedQR = fleurID;
@@ -153,40 +189,55 @@ let app = new Vue({
         qrcode.makeCode(fleurID.toString());
     },
 
+    /**
+     * Quitte la fenêtre contenant le code QR
+     */
     leaveQR(){
         this.viewQR = false;
     },
 
+    /**
+     * Envoi l'instruction a l'API afin de supprimer la fleur
+     * @params fleurID, id de la fleur à supprimer
+     */
     deleteFleur(fleurID){
       $.ajax({
         type: 'DELETE',
         url: 'http://'+ Api +':19080/fleurs/' + fleurID,
         context: this,
         success: function(data){
-          this.leaveEdit();
-          this.getFleurs();
-        },
-        error: function(data){
-          console.log(data);
-        },
-        completed: function(data){
-          console.log(data);
-        }
+                    this.leaveEdit();
+                    this.getFleurs();
+                  },
+        error: function(data){console.log(data);}
       });
+    },
+
+    /**
+     * Ajout un eventListener qui va permettre de fermer un popup
+     */
+    escKeyToLeaveAWindow(){
+      document.onkeydown = evt => {
+        evt = evt || window.event;
+        if (evt.keyCode == 27) {
+          this.leaveEdit();
+          this.leaveQR();
+        }
+      };
     }
+
   },
+
   created: function(){
     this.getFleurs();
     this.initEditionFields();
-    document.onkeydown = evt => {
-      evt = evt || window.event;
-      if (evt.keyCode == 27) {
-        this.leaveEdit();
-        this.leaveQR();
-      }
-    };
+    this.escKeyToLeaveAWindow();
   },
+
   computed:{
+    /**
+     * Génère le titre de la fenêtre de création/modification selon l'action en cours
+     */
     actionTitle(){
       if(this.create)
         return 'Création';
