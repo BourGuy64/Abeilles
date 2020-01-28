@@ -117,27 +117,30 @@ let app = new Vue({
         processData: false,
         context: this,
         success: function(data){
-          if($('#img').prop('files').length > 0)
-            dataToSend.photo = $('#img').prop('files')[0].name;
-          $.ajax({
-            type: 'PATCH',
-            url: 'http://'+ Api +':19080/fleurs/' + this.editTargetId,
-            data: dataToSend,
-            context: this,
-            success: function(data){
-              this.leaveEdit();
-              this.getFleurs();
-            },
-            error: function(data){
-              console.log(data);
-            },
-            completed: function(data){
-              console.log(data);
-            }
-          });
-        },
+                  //Vérifi si il y a bien une image a transmettre
+                  if($('#img').prop('files').length > 0)
+                    this.edition.photo = $('#img').prop('files')[0].name;
+                  else
+                    delete this.edition.photo; //Evite de remplacer l'image existante
+
+                  //Envoi l'instruction a l'API de modifié la fleur
+                  $.ajax({
+                    type: 'PATCH',
+                    url: 'http://'+ Api +':19080/fleurs/' + this.editTargetId,
+                    data: this.edition,
+                    context: this,
+                    success: function(data){
+                              this.leaveEdit();
+                              this.getFleurs();
+                            },
+                    error: function(data){
+                      console.log(data);
+                    }
+                  });
+                },
         error: function(data){
           console.log(data);
+          alert('La taille maximum pour téléverser une image est de 1 Mo.');
         }
       });
     },
