@@ -13,7 +13,7 @@ export class Fleur{
   static getById(req, res){
     db.select().where('id', req.params.id).from('fleurs').then( (result) => {
       if(result.length > 0){
-        res.json(result);
+        res.json(result[0]);
       }
       else{
         ReqStatus.notFound(req, res);
