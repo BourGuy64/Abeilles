@@ -4,6 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
+    "prod": "node --experimental-modules main.js",
     "dev": "nodemon --experimental-modules main.js"
   },
   "keywords": [],

@@ -44,8 +44,8 @@ let app = new Vue({
     viewQR: false,
     generatedQR: '',
     editTargetId: 0,
-    // api: '51.158.67.211' //Use for PROD
-    api: 'localhost' //Use for localhost dev
+    api: '51.158.67.211' //Use for PROD
+    // api: 'localhost' //Use for localhost dev
   },
   methods:{
    /**
