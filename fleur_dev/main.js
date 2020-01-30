@@ -47,7 +47,4 @@ app.use('/fleurs', fleur);
 //Gestion des erreurs 400, requête ou route invalide
 app.all('/*', ReqStatus.badRequest);
 
-
-
-
 app.listen(8080);

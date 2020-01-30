@@ -77,6 +77,17 @@ export class Fleur{
       ReqStatus.internalError(req, res);
     });
   }
+
+  static getImg(req, res){
+      db.select().where('id', req.params.id).from('fleurs').then( (result) => {
+        if(result[0].photo){
+          res.sendFile(process.cwd() + '/uploads/' + result[0].photo);
+        }
+        else{
+          ReqStatus.notFound(req, res);
+        }
+      });
+  }
 }
 
 export default Fleur;

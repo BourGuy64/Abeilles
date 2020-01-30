@@ -11,6 +11,9 @@ router.get('/', Fleur.get);
 //GET sur une fleur selon son ID
 router.get('/:id', Fleur.getById);
 
+//GET pour récupéré l'image d'une fleur
+router.get('/:id/img', Fleur.getImg);
+
 //POST, création d'une fleur
 router.post('/', Fleur.create);
 
