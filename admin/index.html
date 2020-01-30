@@ -105,10 +105,10 @@
             <th></th>
           </thead>
           <tbody>
-            <tr v-for="fleur in fleurs">
+            <tr :id="fleur.id" v-for="fleur in fleurs">
               <td @click="editFleur(fleur)"><i class="material-icons pointer">edit</i></td>
               <td @click="createQR(fleur.id)"><img width="20px" src="src/svg/QR_icon.svg" alt="QR_icon"></td>
-              <td><img width="2em" :src="'uploads/' + fleur.photo" alt=""></td>
+              <td class="fleur_img"><img :src="'http://'+ api + ':19080/fleurs/' + fleur.id + '/img'"></td>
               <td>{{fleur.id}}</td>
               <td>{{fleur.n_latin}}</td>
               <td>{{fleur.n_fr}}</td>

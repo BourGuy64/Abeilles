@@ -112,4 +112,8 @@ table tr td, table tr th {
   cursor: pointer;
 }
 
+.fleur_img img {
+  width: 20px;
+}
+
 /*# sourceMappingURL=style.css.map */

@@ -128,3 +128,14 @@ table{
 .pointer{
   cursor: pointer;
 }
+
+.fleur_img{
+  img{
+    width: 20px;
+    // transition: width .3s;
+    // &:hover{
+    //   width: 100%;
+    //   transition: width .5s
+    // }
+  }
+}

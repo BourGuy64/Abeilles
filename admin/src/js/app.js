@@ -21,9 +21,6 @@ Vue.filter('meterSize', function(taille){
 
 });
 
-const Api = 'localhost'; //Use when dev on local Docker's
-// const Api = '51.158.67.211'; //Use for Prod
-
 let app = new Vue({
   el: '#app',
   data: {
@@ -38,15 +35,17 @@ let app = new Vue({
       color :'',
       nectar :0,
       pollen :0,
-      bloom_start :'',
-      bloom_end :'',
+      bloom_start : 1,
+      bloom_end : 1,
       localisation :'',
       position :'',
       photo :''
     },
     viewQR: false,
     generatedQR: '',
-    editTargetId: 0
+    editTargetId: 0,
+    // api: '51.158.67.211' //Use for PROD
+    api: 'localhost' //Use for localhost dev
   },
   methods:{
    /**
@@ -55,7 +54,7 @@ let app = new Vue({
     getFleurs(){
       $.ajax({
         type: 'GET',
-        url: 'http://'+ Api +':19080/fleurs',
+        url: 'http://'+ this.api +':19080/fleurs',
         dataType: 'json',
         context: this,
         success: function(data){this.fleurs = data;},
@@ -67,17 +66,47 @@ let app = new Vue({
    * Envoi les données et l'instruction de création d'une nouvelle fleur
    */
     createFleur(){
+      //Récpuère l'image transmise dans le formulaire
+      let file_data = $('#img').prop('files')[0];
+      let form_data = new FormData();
+      form_data.append('file_uploaded', file_data);
+
+      //Transmet l'image à un script PHP pour généré l'image sur le serveur
       $.ajax({
         type: 'POST',
-        url: 'http://'+ Api +':19080/fleurs',
+        url: 'http://'+this.api+':19080/uploadfile',
+        data: form_data,
+        dataType: 'text',
+        cache: false,
+        contentType: false,
+        processData: false,
         context: this,
-        data: this.edition,
         success: function(data){
-                  this.initEditionFields();
-                  this.leaveEdit();
-                  this.getFleurs();
+                  //Vérifi si il y a bien une image a transmettre
+                  if($('#img').prop('files').length > 0)
+                    this.edition.photo = $('#img').prop('files')[0].name;
+                  else
+                    delete this.edition.photo; //Evite de remplacer l'image existante
+                  //Envoi l'instruction a l'API de modifié la fleur
+                  $.ajax({
+                    type: 'POST',
+                    url: 'http://'+ this.api +':19080/fleurs',
+                    data: this.edition,
+                    context: this,
+                    success: function(data){
+                              this.leaveEdit();
+                              this.getFleurs();
+
+                            },
+                    error: function(data){
+                      console.log(data);
+                    }
+                  });
                 },
-        error: function(data){console.log(data);}
+        error: function(data){
+          console.log(data);
+          alert('La taille maximum pour téléverser une image est de 1 Mo.');
+        }
       });
     },
 
@@ -93,8 +122,8 @@ let app = new Vue({
         color :'',
         nectar :0,
         pollen :0,
-        bloom_start :'',
-        bloom_end :'',
+        bloom_start :1,
+        bloom_end :1,
         localisation :'',
         position :'',
         photo :''
@@ -141,7 +170,7 @@ let app = new Vue({
       //Transmet l'image à un script PHP pour généré l'image sur le serveur
       $.ajax({
         type: 'POST',
-        url: 'http://'+Api+':19080/uploadfile',
+        url: 'http://'+this.api+':19080/uploadfile',
         data: form_data,
         dataType: 'text',
         cache: false,
@@ -158,12 +187,13 @@ let app = new Vue({
                   //Envoi l'instruction a l'API de modifié la fleur
                   $.ajax({
                     type: 'PATCH',
-                    url: 'http://'+ Api +':19080/fleurs/' + this.editTargetId,
+                    url: 'http://'+ this.api +':19080/fleurs/' + this.editTargetId,
                     data: this.edition,
                     context: this,
                     success: function(data){
                               this.leaveEdit();
                               this.getFleurs();
+                              $('#' + this.editTargetId + ' > .fleur_img').empty().append($('<img>', {src: 'http://' + this.api + ':19080/fleurs/' + this.editTargetId + '/img'}))
                             },
                     error: function(data){
                       console.log(data);
@@ -203,7 +233,7 @@ let app = new Vue({
     deleteFleur(fleurID){
       $.ajax({
         type: 'DELETE',
-        url: 'http://'+ Api +':19080/fleurs/' + fleurID,
+        url: 'http://'+ this.api +':19080/fleurs/' + fleurID,
         context: this,
         success: function(data){
                     this.leaveEdit();
